@@ -36,7 +36,7 @@ function App() {
   }
 
   return (
-    <div className='main' style={{display:'flex',gap:'5rem'}}>
+    <div className='main' style={{display:'flex',gap:'5rem',flexWrap:'wrap'}}>
       <div className="App">
         <button onClick={onClick}>
           fetch (promise.all)
