@@ -37,7 +37,7 @@ function App() {
 
   return (
     <div className='main' style={{display:'flex',gap:'5rem',flexWrap:'wrap'}}>
-      <div className="App">
+      {/* <div className="App">
         <button onClick={onClick}>
           fetch (promise.all)
         </button>
@@ -45,7 +45,7 @@ function App() {
         <div className="info" style={{ display: `${displayProp}` }}>
           {isInfo ? "All Results arrived!" : "waiting for results..."}
         </div>
-      </div>
+      </div> */}
 
       {/* ForkJoin */}
       <ForkJoin />
