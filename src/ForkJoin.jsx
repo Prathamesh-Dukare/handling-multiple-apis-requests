@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { catchError, forkJoin } from "rxjs";
+import { forkJoin } from "rxjs";
 import { ajax } from "rxjs/ajax";
-import { mergeMap, retry } from "rxjs/operators";
+import { retry } from "rxjs/operators";
 import "./App.css";
 
 export default function ForkJoin() {
@@ -27,12 +27,13 @@ export default function ForkJoin() {
     }).pipe(retry(3));
   };
 
-  const fetchAPis = () => {
+  const fetchAllAPis = () => {
     const observable = forkJoin({
       user: fetchUser(),
       coffee: fetchCoffee(),
       beers: fetchBeers(),
     });
+    
     observable.subscribe(
       {
         next: (value) => {
@@ -44,14 +45,12 @@ export default function ForkJoin() {
         console.log("error", error);
       }
     );
-    // .catch((err) => console.log(err));
-    // .retry(3)
   };
 
   const onClick = async () => {
     setIsInfo(false);
     setdisplayProp("block");
-    fetchAPis();
+    fetchAllAPis();
   };
 
   return (
