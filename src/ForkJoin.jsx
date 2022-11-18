@@ -1,45 +1,51 @@
 import { useState } from "react";
-import { forkJoin } from "rxjs";
+import { catchError, forkJoin } from "rxjs";
+import { ajax } from "rxjs/ajax";
+import { mergeMap, retry } from "rxjs/operators";
 import "./App.css";
 
 export default function ForkJoin() {
   const [isInfo, setIsInfo] = useState(false);
   const [displayProp, setdisplayProp] = useState("none");
 
-  const fetchUser = async () => {
-    let res1 = await fetch("http://nodeserver.prathameshdukare.repl.co:80");
-    return res1;
+  const fetchUser = () => {
+    return ajax({
+      url: "https://nodeserver.prathameshdukare.repl.co",
+      method: "GET",
+    }).pipe(retry(3));
   };
-  const fetchCoffee = async () => {
-    let res2 = await fetch("https://api.sampleapis.com/coffee/hot");
-    return res2;
+  const fetchCoffee = () => {
+    return ajax({
+      url: "https://api.sampleapis.com/coffee/hot",
+      method: "GET",
+    }).pipe(retry(3));
   };
-  const fetchBeers = async () => {
-    let res3 = await fetch("https://api.sampleapis.com/beers/ale");
-    return res3;
+  const fetchBeers = () => {
+    return ajax({
+      url: "https://api.sampleapis.com/beers/ale",
+      method: "GET",
+    }).pipe(retry(3));
   };
 
-  const fetchAPis = async () => {
-    try {
-      const observable = forkJoin({
-        user: fetchUser(),
-        coffee: fetchCoffee(),
-        beers: fetchBeers(),
-      });
-      observable.subscribe(
-        {
-          next: (value) => {
-            console.log("value", value);
-            setIsInfo(true);
-          },
+  const fetchAPis = () => {
+    const observable = forkJoin({
+      user: fetchUser(),
+      coffee: fetchCoffee(),
+      beers: fetchBeers(),
+    });
+    observable.subscribe(
+      {
+        next: (value) => {
+          console.log("value", value);
+          setIsInfo(true);
         },
-        (error) => {
-          console.log("error", error);
-        }
-      );
-    } catch {
-      console.log("error resolving all responses");
-    }
+      },
+      (error) => {
+        console.log("error", error);
+      }
+    );
+    // .catch((err) => console.log(err));
+    // .retry(3)
   };
 
   const onClick = async () => {
