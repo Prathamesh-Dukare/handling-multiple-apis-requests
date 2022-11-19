@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { forkJoin } from "rxjs";
 import { ajax } from "rxjs/ajax";
-import { retry } from "rxjs/operators";
+import { retry, retryWhen, map, tap } from "rxjs/operators";
 import "./App.css";
 
 export default function ForkJoin() {
@@ -9,10 +9,26 @@ export default function ForkJoin() {
   const [displayProp, setdisplayProp] = useState("none");
 
   const fetchUser = () => {
-    return ajax({
-      url: "https://nodeserver.prathameshdukare.repl.co",
-      method: "GET",
-    }).pipe(retry(3));
+    return (
+      ajax({
+        url: "https://nodeserver.prathameshdukare.repl.co",
+        method: "GET",
+      }).pipe(
+        map((res) => {
+          if (res.response.msg === "pending") {
+            throw res.response;
+          }
+          return res.response;
+        })
+      ),
+      retryWhen((errors) =>
+        errors.pipe(
+          //log error message
+          tap((val) => console.log(`Value ${val} was too high!`))
+          //restart in 6 seconds
+        )
+      )
+    );
   };
   const fetchCoffee = () => {
     return ajax({
@@ -33,7 +49,7 @@ export default function ForkJoin() {
       coffee: fetchCoffee(),
       beers: fetchBeers(),
     });
-    
+
     observable.subscribe(
       {
         next: (value) => {
