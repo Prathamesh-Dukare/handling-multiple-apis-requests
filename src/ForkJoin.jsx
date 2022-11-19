@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { forkJoin } from "rxjs";
+import { forkJoin, delayWhen, timer } from "rxjs";
 import { ajax } from "rxjs/ajax";
 import { retry, retryWhen, map, tap } from "rxjs/operators";
 import "./App.css";
@@ -8,34 +8,37 @@ export default function ForkJoin() {
   const [isInfo, setIsInfo] = useState(false);
   const [displayProp, setdisplayProp] = useState("none");
 
+  let retryCount = 0;
   const fetchUser = () => {
-    return (
-      ajax({
-        url: "https://nodeserver.prathameshdukare.repl.co",
-        method: "GET",
-      }).pipe(
-        map((res) => {
-          if (res.response.msg === "pending") {
-            throw res.response;
-          }
-          return res.response;
-        })
-      ),
+    return ajax({
+      url: "http://localhost",
+      method: "GET",
+    }).pipe(
+      map((res) => {
+        if (res.response.msg === "pending") {
+          retryCount++;
+          throw res.response.msg;
+        }
+        console.log("Results arrived");
+        return res.response.msg;
+      }),
+
       retryWhen((errors) =>
         errors.pipe(
-          //log error message
-          tap((val) => console.log(`Value ${val} was too high!`))
-          //restart in 6 seconds
+          tap(() => console.log("Retrying...", retryCount)),
+          delayWhen(() => timer(3000))
         )
       )
     );
   };
+
   const fetchCoffee = () => {
     return ajax({
       url: "https://api.sampleapis.com/coffee/hot",
       method: "GET",
     }).pipe(retry(3));
   };
+
   const fetchBeers = () => {
     return ajax({
       url: "https://api.sampleapis.com/beers/ale",
@@ -53,7 +56,7 @@ export default function ForkJoin() {
     observable.subscribe(
       {
         next: (value) => {
-          console.log("value", value);
+          console.log(value);
           setIsInfo(true);
         },
       },
